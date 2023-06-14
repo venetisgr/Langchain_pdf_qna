@@ -159,7 +159,7 @@ def pinecone_status(index):
         print("no info, make sure pinecone is initialized and database exists")
 
 
-def query_pinecone(index_name,embed_model_api_key,query,topk=3,embed_model_name='text-embedding-ada-002',qna_model="gpt-3.5-turbo",temperature=0.0,chain_type="stuff"):
+def query_pinecone(index_name,embed_model_api_key,query,topk=3,embed_model_name='text-embedding-ada-002',qna_model="gpt-3.5-turbo",temperature=0.0,chain_type="stuff",search_type="similarity"):
     """
     This function performs two tasks. One, find the topk closest documents for the given query. Two, answer the query using those documents
 
@@ -183,11 +183,11 @@ def query_pinecone(index_name,embed_model_api_key,query,topk=3,embed_model_name=
         index, embeddings.embed_query,"text" #text correlates to the text key of the metadata, thus it necessary when we send data to the index to have such key value
     )
 
-    #find topk closest documents to our query
-    vectorstore.similarity_search(
-        query,  # our search query
-        k=topk  # return top k most relevant docs
-    )
+    # #find topk closest documents to our query
+    # vectorstore.similarity_search(
+    #     query,  # our search query
+    #     k=topk  # return top k most relevant docs
+    # )
 
 
     # completion llm
@@ -202,7 +202,7 @@ def query_pinecone(index_name,embed_model_api_key,query,topk=3,embed_model_name=
     qa_with_sources = RetrievalQAWithSourcesChain.from_chain_type(
         llm=llm,
         chain_type=chain_type,
-        retriever=vectorstore.as_retriever()
+        retriever=vectorstore.as_retriever(search_type=search_type,search_kwargs={"k": topk})
     )
     #we give the users the citation, so he can check it himself where the info came from
 
